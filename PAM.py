@@ -80,13 +80,14 @@ class PAM:
 
         # other vertices probabilities:  (vertex_degr + δ)/(local_t(2 + δ) + (1 + δ))
         for i in range(len(probabilities)-1):
-            vertex_degr = len(self.G_repr.adj[i])
-            vertex_degr = (vertex_degr + self.delta_repr)/(local_t*(2 + self.delta_repr) + (1 + self.delta_repr))
-            probabilities[i] = vertex_degr
+
+            # find degree with self loop counting double
+            adj = self.G_repr.adj[i] 
+            vertex_degr = len(adj)+1 if (i in adj.keys()) else len(adj)
+
+            probabilities[i]  = (vertex_degr + self.delta_repr)/(local_t*(2 + self.delta_repr) + (1 + self.delta_repr))
 
         
-        print(self.G_repr.number_of_nodes())
-        print(self.G_repr.number_of_edges())
         print(probabilities)
         assert abs(sum(probabilities) - 1) < 0.00001, "PMF does not sum to 1, but to {}".format(sum(probabilities))
 
@@ -122,5 +123,5 @@ class PAM:
         return SizeBiasedDegreeDistribution(self.G, tail=tail)
 
 if __name__=="__main__":
-    pam = PAM(1, 1, 50)
+    pam = PAM(1, 1, 100)
     pam.draw()
