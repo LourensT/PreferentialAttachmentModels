@@ -88,7 +88,6 @@ class PAM:
             probabilities[i]  = (vertex_degr + self.delta_repr)/(local_t*(2 + self.delta_repr) + (1 + self.delta_repr))
 
         
-        print(probabilities)
         assert abs(sum(probabilities) - 1) < 0.00001, "PMF does not sum to 1, but to {}".format(sum(probabilities))
 
         return probabilities
@@ -102,15 +101,28 @@ class PAM:
         if self.m == 1:
             self.G = self.G_repr
         else:
-            # collapse graph
-            print("CASES FOR m > 1 not yet implented, giving m=1 representation")
+            # collapses G_repr into G
+            self.G = nx.Graph()
 
-            self.G = self.G_repr
-            pass
+            # add t vertices 
+            for i in range(self.current_timestep):
+                self.G.add_node(i)
+            
+            for i in range(self.current_timestep): # i denotes the collapsed vertex
+                for j in range(self.m): # j iterates through 
+                    vertex_index = i*self.m + j
 
+                    # loop through the adjacent vertices
+                    for adj_vertex in self.G_repr.adj[vertex_index].keys():
+
+                        # find the name of the collapsed vertex
+                        adj_vertex_collapsed = (adj_vertex // self.m)
+
+                        # add edge to the collapsed graph
+                        self.G.add_edge(i, adj_vertex_collapsed)
 
     def draw(self):
-        nx.draw(self.G)
+        nx.draw_circular(self.G)
         plt.show()
 
     def DegreeDistribrution(self, tail=True):
@@ -123,5 +135,5 @@ class PAM:
         return SizeBiasedDegreeDistribution(self.G, tail=tail)
 
 if __name__=="__main__":
-    pam = PAM(1, 1, 100)
+    pam = PAM(2, 0, 30)
     pam.draw()
