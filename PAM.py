@@ -163,6 +163,44 @@ class PAM:
     def SizeBiasedDegreeDistribution(self, tail=True):
         return SizeBiasedDegreeDistribution(self.G, tail=tail)
 
+        '''
+    Returns distribution of typical distance:
+
+    the length of the shortest path between two randomly drawn nodes, given that they are connected
+    '''
+    def typicalDistanceDistribution(self):
+        #dictionary of dictionaries
+        all_shortest_paths = nx.algorithms.shortest_path(self.G)
+
+        pmf = {}
+        numberOfPaths = 0
+        for source, destinations in all_shortest_paths.items():
+            for destination, path in destinations.items():
+                if len(path) in pmf:
+                    pmf[len(path)] += 1
+                else: 
+                    pmf[len(path)] = 1
+                numberOfPaths += 1
+        
+        #normalize the histogram (paths currently double counted)
+        for key in pmf.keys():
+            pmf[key] = pmf[key] / numberOfPaths
+
+        assert abs(sum([v for v in pmf.values()]) - 1) < 0.00001, "pmf does not sum to one!!"
+
+        return pmf
+
+    '''
+    Returns size of largest connected component (giant components)
+
+    Note: Strictly speaking, we assume the GRG is highly connected, that is, as n -> \inf, 
+    liminf of the ( size of the largest connected component / size of network) > 0.
+    '''
+    def getSizeOfGiantComponent(self):
+        # get sorted list of size of all connected components
+        component_sizes = [len(c) for c in sorted(nx.connected_components(self.G), key=len, reverse=True)]
+        return component_sizes[0]
+
 if __name__=="__main__":
     pam = PAM(2, 0, 1000)
     pam.draw()
