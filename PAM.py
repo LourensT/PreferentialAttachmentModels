@@ -23,11 +23,13 @@ class PAM:
     @param m >=1, number of edges added each timestep
     @param delta >= -m, determines the growth rule
     @param t >= 1, number of timesteps
+    @argument recursive=False, there are now benefits to recursive implementation, it is limited by the recursion depth. 
+                                but I'm still keeping it in, sue me.
 
     @constraint: delta >= -m
 
     '''
-    def __init__(self, m, delta, t):
+    def __init__(self, m, delta, t, recursive=False):
         assert delta >= -m, "parameter delta has to be >= -m"
 
         self.delta_repr = delta / m
@@ -36,8 +38,20 @@ class PAM:
         # the representation of the PAM in terms of PAM with m = 1.
         self.G_repr = nx.Graph()
 
-        # generate PAM_m=1 by recursively growing to t timesteps
-        self.recursiveGrowth(t)
+        if recursive:
+            # generate PAM_m=1 by recursively growing to t timesteps
+            self.recursiveGrowth(t)
+        else:
+            self.iterativeGrowth(t)
+
+    def growFurther(self, t, recursive=False):
+        assert t >= self.current_timestep, "timestep given in recursiveGrowth is less than current timestep."
+
+        if recursive:
+            self.recursiveGrowth(t)
+        else:
+            self.iterativeGrowth(t)
+
 
     '''
     recursively grow G_repr until it has self.m*t nodes
@@ -60,6 +74,21 @@ class PAM:
 
             # recursive call
             self.recursiveGrowth(t)
+
+    '''
+    iteratively grow G_repr until it has self.m*t nodes
+    '''
+    def iterativeGrowth(self, t):
+        for i in range(self.G_repr.number_of_nodes(), self.m*t):
+            # add new vertex (first vertex is called "0")
+            self.G_repr.add_node(i)
+
+            # add the appropriate edge with the heuristic  (8.2.1)
+            self._addConnection()
+
+        self.current_timestep = t
+        self._collapseGraph()
+        
 
     def _addConnection(self):
         # the name of the just added vertex
@@ -135,5 +164,5 @@ class PAM:
         return SizeBiasedDegreeDistribution(self.G, tail=tail)
 
 if __name__=="__main__":
-    pam = PAM(2, 0, 30)
+    pam = PAM(2, 0, 1000)
     pam.draw()
