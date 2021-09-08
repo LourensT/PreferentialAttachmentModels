@@ -1,0 +1,37 @@
+%Distribution of typical distance of PAM (t=2000, delta=-1, m=2). (implies degree distribution has powerlaw distr tau=2.5
+\tikzstyle{every node}=[font=\normalsize]
+
+\begin{tikzpicture}
+    \begin{axis}[%
+width=0.951\fwidth,
+height=\fheight,
+at={(0\fwidth,0\fheight)},
+scale only axis,
+xminorticks=true,
+yminorticks=true,
+axis x line*=bottom,
+axis y line*=left,
+x tick label style = {/pgf/number format/.cd, scaled x ticks = false, set thousands separator={}, fixed},
+axis background/.style={fill=white},
+legend style={legend pos=north west, legend cell align=left, align=left, draw=white!15!black}, 
+xmin=0, 
+xmax=8, 
+ymin=0, 
+ymax=0.4366705, 
+xlabel={Typical Distance}]
+
+\addplot [color=mycolor2, line width = 2pt, mark size=1.5pt, mark=*, only marks, mark options={solid, mycolor2}]
+table[row sep=crcr]{
+1	0.0005\\ 
+2	0.0019715\\ 
+3	0.071238\\ 
+4	0.318145\\ 
+5	0.4366705\\ 
+6	0.160714\\ 
+7	0.0106985\\ 
+8	6.25e-05\\ 
+};
+\addlegendentry{Typical Distance}
+
+	\end{axis}
+\end{tikzpicture}

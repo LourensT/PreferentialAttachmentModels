@@ -110,7 +110,7 @@ class PAM:
         # other vertices probabilities:  (vertex_degr + δ)/(local_t(2 + δ) + (1 + δ))
         for i in range(len(probabilities)-1):
 
-            # find degree with self loop counting double
+            # find degree of vertex with a self loop counting double
             adj = self.G_repr.adj[i] 
             vertex_degr = len(adj)+1 if (i in adj.keys()) else len(adj)
 
