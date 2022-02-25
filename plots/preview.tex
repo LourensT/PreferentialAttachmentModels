@@ -68,6 +68,14 @@
 	\definecolor{mycolor4}{rgb}{0.00000,0.10000,0.10000}
 	\definecolor{mycolor5}{rgb}{0.00000,1,1}
 	
+	Here we generated Preferential Attachment Models (PAMs) as defined in chapter 8 of RGCN volume 1. 
+	
+	From 8.4.11 en 8.4.12, we know degree distribution behaves like powerlaw with exponent $\tau = 3 + \frac{\delta}{m} > 2$.
+	
+	The objective here is to inspect three different definitions for a degree distribution. The conventional definition, the size-biased definition (1.2.2 in RGCN I), and the random friend distribution (the degree distribution of a uniformly selected adjacent vertex to a uniformly selected vertex in the network).
+	
+	The plots below are for two generated graphs. One with parameters $\delta= -1, m = 2 \implies \tau = 2.5$, the other with parameters $\delta = 1, m = 2 \implies \tau = 3.5$. Both with $n = 10000$. 
+	
 	\begin{figure}[!htb]
 		\centering
 		\input{degree_distribution_tau2,5.tikz}

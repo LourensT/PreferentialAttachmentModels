@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 # tau = 2.5 = 3 + (-1 / 2) = 3 + δ/m
 m = 2
 d = -1
-t = 2000
+t = 10000
 
 BASE_FP = os.getcwd() + "\\plots\\"
 
@@ -62,7 +62,7 @@ plt.show()
 # tau = 3.5 = 3 + (1 / 2) = 3 + δ/m
 m = 2
 d = 1
-t = 2000
+t = 10000
 
 graph = PAM(m, d, t)
 # get distributions
