@@ -1,8 +1,10 @@
+from datetime import datetime
 import networkx as nx
 from scipy import stats
 import numpy as np
 #import itertools
 import matplotlib.pyplot as plt
+import random
 
 #import tikzplotlib as plt2tikz
 
@@ -23,7 +25,7 @@ class PAM:
     @param m >=1, number of edges added each timestep
     @param delta >= -m, determines the growth rule
     @param t >= 1, number of timesteps
-    @argument recursive=False, there are now benefits to recursive implementation, it is limited by the recursion depth. 
+    @argument recursive=False, there are no benefits to recursive implementation, it is limited by the recursion depth. 
                                 but I'm still keeping it in, sue me.
 
     @constraint: delta >= -m
@@ -85,6 +87,9 @@ class PAM:
 
             # add the appropriate edge with the heuristic  (8.2.1)
             self._addConnection()
+
+            if i%1000 == 0:
+                print(f'At node {i} at time {datetime.now().strftime("%H:%M:%S")}')
 
         self.current_timestep = t
         self._collapseGraph()
@@ -163,25 +168,40 @@ class PAM:
     def SizeBiasedDegreeDistribution(self, tail=True):
         return SizeBiasedDegreeDistribution(self.G, tail=tail)
 
-        '''
-    Returns distribution of typical distance:
-
-    the length of the shortest path between two randomly drawn nodes, given that they are connected
     '''
-    def typicalDistanceDistribution(self):
-        #dictionary of dictionaries
-        all_shortest_paths = nx.algorithms.shortest_path(self.G)
+    Returns distribution of typical distance:
+    - the length of the shortest path between two randomly drawn nodes, given that they are connected
 
+    @param sample: The number of randomly drawn 
+
+    '''
+    def typicalDistanceDistribution(self, sample=-1):
+
+        all_shortest_paths = []
+        if sample == -1:
+            #dictionary of dictionaries dict[source][target] = path
+            for source, destinations in nx.algorithms.shortest_path(self.G).items():
+                for destination, path in destinations.items():
+                    all_shortest_paths.append(path)
+        else:
+            sources = random.choices(list(self.G.nodes), k=sample)
+            targets = random.choices(list(self.G.nodes), k=sample)
+            print(sources, targets)
+            for i in range(sample):
+                all_shortest_paths.append(nx.algorithms.shortest_path(self.G, sources[i], targets[i]))
+
+        # calculate pmf
         pmf = {}
-        numberOfPaths = 0
-        for source, destinations in all_shortest_paths.items():
-            for destination, path in destinations.items():
-                if len(path) in pmf:
-                    pmf[len(path)] += 1
-                else: 
-                    pmf[len(path)] = 1
-                numberOfPaths += 1
-        
+        numberOfPaths = 0 #if sample > 0, then this will end up being equal to sample
+        for path in all_shortest_paths:
+            if (len(path)-1) in pmf:
+                pmf[len(path)-1] += 1
+            else: 
+                pmf[len(path)-1] = 1
+            numberOfPaths += 1
+
+        print(numberOfPaths)
+
         #normalize the histogram (paths currently double counted)
         for key in pmf.keys():
             pmf[key] = pmf[key] / numberOfPaths
