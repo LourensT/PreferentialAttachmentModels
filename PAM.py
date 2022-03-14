@@ -40,6 +40,8 @@ class PAM:
         # the representation of the PAM in terms of PAM with m = 1.
         self.G_repr = nx.Graph()
 
+        self.degr_distr = {}
+
         if recursive:
             # generate PAM_m=1 by recursively growing to t timesteps
             self.recursiveGrowth(t)
@@ -88,7 +90,7 @@ class PAM:
             # add the appropriate edge with the heuristic  (8.2.1)
             self._addConnection()
 
-            if i%1000 == 0:
+            if i%10000 == 0:
                 print(f'At node {i} at time {datetime.now().strftime("%H:%M:%S")}')
 
         self.current_timestep = t
@@ -99,12 +101,22 @@ class PAM:
         # the name of the just added vertex
         firstEndpoint = self.G_repr.number_of_nodes()-1
 
-        # select randomly the name of another vertex
-        #  TODO: do this sampling by bulk for efficiency
-        secondEndpoint = np.random.choice(np.arange(0, self.G_repr.number_of_nodes()), p=self._calculateConnectionPMF())
+        # self loop probability
+        self.degr_distr[firstEndpoint] = 1 + self.delta_repr
 
+        # select randomly the name of another vertex
+        secondEndpoint = random.choices(tuple(self.degr_distr.keys()), k = 1, weights = tuple(self.degr_distr.values()))[0]
+
+        # maintain degree distr
+        self.degr_distr[secondEndpoint] += 1
+
+        # update self.G
         self.G_repr.add_edge(firstEndpoint, secondEndpoint)
 
+
+    ''' 
+    Explictely calculate the probabilities of attachment for each node. 
+    '''
     def _calculateConnectionPMF(self):
         local_t = self.G_repr.number_of_nodes() - 1
         probabilities = np.zeros(self.G_repr.number_of_nodes())
@@ -125,7 +137,6 @@ class PAM:
         assert abs(sum(probabilities) - 1) < 0.00001, "PMF does not sum to 1, but to {}".format(sum(probabilities))
 
         return probabilities
-
 
     '''
     (PAM_m,delta)_t is defined in terms of(PAM_1,delta/m)_mt.
@@ -186,7 +197,6 @@ class PAM:
         else:
             sources = random.choices(list(self.G.nodes), k=sample)
             targets = random.choices(list(self.G.nodes), k=sample)
-            print(sources, targets)
             for i in range(sample):
                 all_shortest_paths.append(nx.algorithms.shortest_path(self.G, sources[i], targets[i]))
 
@@ -220,6 +230,21 @@ class PAM:
         # get sorted list of size of all connected components
         component_sizes = [len(c) for c in sorted(nx.connected_components(self.G), key=len, reverse=True)]
         return component_sizes[0]
+
+    '''
+    store the networkx graph object
+    '''
+    def dumpGraph(self, fp='default'):
+        import pickle
+
+        if fp == 'default':
+            fp = datetime.now().strftime("%H:%M:%S") + ".graph"
+        elif not ".graph" in fp:
+            fp = fp + ".graph"
+
+        with open(fp, 'wb') as f:
+            pickle.dump(self, f)
+
 
 if __name__=="__main__":
     pam = PAM(2, 0, 1000)
